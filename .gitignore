@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# modelo baixado / cache rembg
+.models/
+.u2net/
+
+# saídas de teste
+recortados/
+
+# macOS
+.DS_Store
