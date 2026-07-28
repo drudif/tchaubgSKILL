@@ -38,9 +38,15 @@ python3 scripts/tchaubg.py a.jpg --trim --matting
 | `--force` | reprocessa o que já existe |
 | `--json` | relatório em JSON no stdout |
 
-Aceita jpg, png, webp, bmp, tiff e heic. Nunca sobrescreve os originais.
-Referência de velocidade: ~5s por imagem em Apple Silicon, ~12s em CPU de
-servidor.
+Aceita jpg, png, webp, bmp e tiff. Nunca sobrescreve os originais. Referência
+de velocidade: ~5s por imagem em Apple Silicon, ~12s em CPU de servidor.
+
+**HEIC/HEIF do iPhone não é lido** — converta antes:
+
+```bash
+sips -s format jpeg foto.heic --out foto.jpg   # macOS, já vem instalado
+ffmpeg -i foto.heic foto.jpg                   # multiplataforma
+```
 
 ## Ferramentas usadas
 
@@ -52,16 +58,13 @@ O recorte é trabalho de projetos de código aberto de outras pessoas:
 | [rembg](https://github.com/danielgatis/rembg) (Daniel Gatis) | MIT | baixa o modelo, roda a inferência, devolve o alpha |
 | [ONNX Runtime](https://github.com/microsoft/onnxruntime) (Microsoft) | MIT | executa o modelo em CPU |
 | [Pillow](https://github.com/python-pillow/Pillow) | MIT-CMU (HPND) | leitura e escrita das imagens |
-| [pillow-heif](https://github.com/bigcat88/pillow_heif) | BSD-3-Clause | HEIC/HEIF do iPhone |
 | [NumPy](https://github.com/numpy/numpy) / [SciPy](https://github.com/scipy/scipy) / [pymatting](https://github.com/pymatting/pymatting) | BSD-3-Clause / BSD-3-Clause / MIT | array, filtros e alpha matting |
 
 Skill escrita com [Claude Code](https://claude.com/claude-code).
 
-> **Ressalva de licença:** as wheels binárias do `pillow-heif` embutem libheif e
-> libde265 (LGPLv3), x265 (**GPLv2**) e libaom (BSD-3) — por causa do x265 a
-> wheel é GPLv2. O código deste repositório é MIT; a obrigação copyleft só
-> aparece se você redistribuir um binário com o `pillow-heif` embutido. Sem
-> essa dependência, tudo segue funcionando exceto HEIC.
+Toda a árvore de dependências é permissiva (MIT, BSD-3, HPND) — nenhuma
+cláusula copyleft. É por isso que HEIC ficou de fora: dependia do
+`pillow-heif`, cuja wheel binária é GPLv2 por embutir o x265.
 
 ## Licença
 

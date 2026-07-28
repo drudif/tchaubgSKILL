@@ -6,7 +6,7 @@ O modelo é carregado uma única vez e reaproveitado entre as imagens, então
 processar 30 fotos numa chamada é muito mais rápido que 30 chamadas.
 
     python3 tchaubg.py FOTOS/ --out RECORTES/
-    python3 tchaubg.py a.jpg b.heic --trim --json
+    python3 tchaubg.py a.jpg b.png --trim --json
     python3 tchaubg.py --check
 """
 from __future__ import annotations
@@ -17,7 +17,8 @@ import sys
 import time
 from pathlib import Path
 
-EXTS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tif", ".tiff", ".heic", ".heif"}
+EXTS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tif", ".tiff"}
+HEIC_EXTS = {".heic", ".heif"}  # não suportado: ver README (dependência GPLv2)
 
 MODELS = {
     "birefnet-portrait": "retratos (padrão) — melhor recorte de cabelo",
@@ -32,17 +33,6 @@ MODELS = {
 
 def eprint(*a):
     print(*a, file=sys.stderr, flush=True)
-
-
-def register_heif() -> bool:
-    """Habilita leitura de HEIC/HEIF (fotos de iPhone). Opcional."""
-    try:
-        import pillow_heif
-
-        pillow_heif.register_heif_opener()
-        return True
-    except Exception:
-        return False
 
 
 def check() -> int:
@@ -72,10 +62,6 @@ def check() -> int:
         info["ok"] = False
         info["problemas"].append(f"Pillow não importável: {e}")
 
-    info["heic"] = register_heif()
-    if not info["heic"]:
-        info["problemas"].append("pillow-heif ausente: arquivos .heic/.heif serão pulados")
-
     import os
 
     home = Path(os.environ.get("U2NET_HOME") or Path.home() / ".u2net")
@@ -88,18 +74,29 @@ def check() -> int:
 def collect(paths: list[str], recursive: bool) -> list[Path]:
     """Expande arquivos e diretórios numa lista ordenada e sem repetição."""
     out: list[Path] = []
+    heic = 0
     for raw in paths:
         p = Path(raw).expanduser()
         if p.is_dir():
-            it = p.rglob("*") if recursive else p.iterdir()
-            out += [f for f in it if f.is_file() and f.suffix.lower() in EXTS]
+            it = [f for f in (p.rglob("*") if recursive else p.iterdir()) if f.is_file()]
+            out += [f for f in it if f.suffix.lower() in EXTS]
+            heic += sum(1 for f in it if f.suffix.lower() in HEIC_EXTS)
         elif p.is_file():
+            if p.suffix.lower() in HEIC_EXTS:
+                heic += 1
+                continue
             if p.suffix.lower() not in EXTS:
                 eprint(f"! ignorado (extensão não suportada): {p}")
                 continue
             out.append(p)
         else:
             eprint(f"! não encontrado: {p}")
+    if heic:
+        eprint(
+            f"! {heic} arquivo(s) HEIC/HEIF ignorado(s) — formato não suportado.\n"
+            "  Converta antes: sips -s format jpeg foto.heic --out foto.jpg (macOS)\n"
+            "                  ffmpeg -i foto.heic foto.jpg"
+        )
     seen, uniq = set(), []
     for f in sorted(out):
         r = f.resolve()
@@ -153,13 +150,10 @@ def main() -> int:
     if args.model not in MODELS:
         eprint(f"! modelo '{args.model}' fora da lista conhecida — seguindo mesmo assim")
 
-    heic_ok = register_heif()
     files = collect(args.paths, args.recursive)
     if not files:
         eprint("Nenhuma imagem encontrada.")
         return 1
-    if not heic_ok and any(f.suffix.lower() in {".heic", ".heif"} for f in files):
-        eprint("! pillow-heif ausente: arquivos HEIC serão contados como erro. pip install pillow-heif")
 
     outdir = Path(args.out).expanduser() if args.out else default_outdir(files, args.paths[0])
     outdir.mkdir(parents=True, exist_ok=True)

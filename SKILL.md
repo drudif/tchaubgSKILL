@@ -1,7 +1,7 @@
 ---
 name: tchau-bg
-description: Remove o fundo de fotos e devolve PNG com transparência, em lote e localmente. Use sempre que o usuário pedir para tirar/remover o fundo de uma foto, recortar uma pessoa ou objeto, "deixar o fundo transparente", gerar PNG sem fundo, fazer cutout/recorte para colar em outro layout, isolar alguém de uma foto de time/elenco, ou preparar retratos para deck/site. Também quando mencionar "remove background", "rembg", "tchau bg", "sem fundo". Aceita jpg, png, webp, tiff e heic do iPhone.
-compatibility: Requer python3 (3.9+) com rembg, onnxruntime e Pillow (pip install -r requirements.txt). Opcional pillow-heif para HEIC. Roda offline em CPU depois de baixar o modelo (~1 GB, uma vez).
+description: Remove o fundo de fotos e devolve PNG com transparência, em lote e localmente. Use sempre que o usuário pedir para tirar/remover o fundo de uma foto, recortar uma pessoa ou objeto, "deixar o fundo transparente", gerar PNG sem fundo, fazer cutout/recorte para colar em outro layout, isolar alguém de uma foto de time/elenco, ou preparar retratos para deck/site. Também quando mencionar "remove background", "rembg", "tchau bg", "sem fundo". Aceita jpg, png, webp, bmp e tiff — HEIC precisa ser convertido antes.
+compatibility: Requer python3 (3.9+) com rembg, onnxruntime e Pillow (pip install -r requirements.txt). Roda offline em CPU depois de baixar o modelo (~1 GB, uma vez). Não lê HEIC.
 ---
 
 # TCHAU.BG
@@ -19,8 +19,8 @@ Versão CLI do app web [TCHAU.BG](https://github.com/drudif/tchaubg).
 python3 scripts/tchaubg.py --check
 ```
 
-Devolve JSON com versões, providers do onnxruntime, suporte a HEIC e os modelos
-já baixados. Se `rembg` não importar, instale antes:
+Devolve JSON com versões, providers do onnxruntime e os modelos já baixados.
+Se `rembg` não importar, instale antes:
 
 ```bash
 pip install -r requirements.txt
@@ -102,9 +102,12 @@ rode o lote inteiro de novo com o ajuste (`--force`), não conserte uma só.
 
 ## Limitações que valem avisar
 
-- **HEIC** exige `pillow-heif`; sem ele o arquivo entra como erro. O binário
-  desse pacote é GPLv2 (embute x265) — se o destino for um produto fechado,
-  converta o HEIC antes com `sips`/`ffmpeg` e dispense a dependência.
+- **HEIC/HEIF do iPhone não é lido** — a única biblioteca prática para isso
+  (`pillow-heif`) tem wheel GPLv2 e ficou de fora de propósito. Se o usuário
+  trouxer HEIC, converta antes e siga:
+  `sips -s format jpeg foto.heic --out foto.jpg` (macOS) ou
+  `ffmpeg -i foto.heic foto.jpg`. Um `.heic` na pasta é simplesmente ignorado
+  pelo script, com aviso no stderr.
 - Fundo da cor da roupa, vidro, reflexo e sombra projetada são os casos em que
   qualquer um desses modelos erra. Não insista em flag: avise o usuário.
 - O modelo devolve a máscara do assunto principal — não separa duas pessoas
@@ -120,5 +123,4 @@ rode o lote inteiro de novo com o ajuste (`--force`), não conserte uma só.
 | [rembg](https://github.com/danielgatis/rembg) | MIT |
 | [ONNX Runtime](https://github.com/microsoft/onnxruntime) | MIT |
 | [Pillow](https://github.com/python-pillow/Pillow) | MIT-CMU (HPND) |
-| [pillow-heif](https://github.com/bigcat88/pillow_heif) | BSD-3-Clause (wheel GPLv2) |
 | [NumPy](https://github.com/numpy/numpy) | BSD-3-Clause |

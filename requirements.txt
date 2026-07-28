@@ -2,8 +2,3 @@
 rembg>=2.0.76
 onnxruntime>=1.23.2      # extra "cpu" do rembg, declarado aqui explicitamente
 pillow>=12.1
-
-# Opcional: leitura de HEIC/HEIF (fotos de iPhone).
-# A wheel binária embute x265 e por isso é GPLv2 — remova esta linha se o
-# destino for um produto de licença fechada (converta o HEIC antes com sips).
-pillow-heif>=1.4
