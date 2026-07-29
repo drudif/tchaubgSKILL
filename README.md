@@ -2,7 +2,7 @@
 
 Skill para [Claude Code](https://claude.com/claude-code) que remove o fundo de
 fotos e devolve **PNG com transparência**, em lote e 100% local. É a versão
-linha de comando do app web [TCHAU.BG](https://github.com/drudif/tchaubg).
+linha de comando do TCHAU.BG.
 
 Peça em português mesmo — "tira o fundo dessas fotos", "recorta essa galera",
 "quero em PNG transparente" — e o agente escolhe o modelo, roda o lote,
